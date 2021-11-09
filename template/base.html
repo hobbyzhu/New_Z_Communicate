@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>猪仔之家{{name}}</title>
+    <!--方法1，直接从BootStrap网站倒入CSS文件，方法2.将BootStrap下载到本地-->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
+
+    <!--导入bootstrap.js 和 jquery-->
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.js"></script>
+
+    <link rel="stylesheet" href="/css/woniunote.css" type="text/css"/>
+
+    <!-- 为了更好地兼容移动设备，使用CSS的媒体查询功能 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- 用户注册页面的交互js代码  -->
+    <script type="text/javascript" src="/js/userlogin.js"></script>
+    <style>
+
+         @media (min-width: 1300px) {
+            .container{
+                max-width: 1300px;
+            }
+        }
+        .header {
+            border-top:solid 1px black;
+        }
+        body {
+            background-color: #ffffff;
+        }
+        .side {
+            margin: 10px 0;
+            padding: 0;
+
+        }
+        .side .tip{
+            background-color: black;
+            height: 42px;
+            color: #cbd3da;
+            line-height: 42px;
+            font-size: 15px;
+            border-bottom:solid 2px red;
+        }
+        .side ul{
+            list-style: none;
+            padding-left: 0px
+        }
+        .side .ul li{
+
+        }
+        .place div{
+         margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部log个slogan区域-->
+    <div class="header">
+        <div class="container" style="height:81px">
+            <div class="row"style="padding: 0">
+                <div class="col-5" style="float:left;;padding-top: 10px;padding: 0"><img src="/img/logo1.png" width="230" height="58"/></div>
+                <div class="col-7 d-none d-sm-block" style="text-align:right;font-size: 36px; padding-top: 10px">New Z community</div>
+                <div class="col-7 d-sm-none " style="border: solid 1px black;font-size: 36px; padding-top: 10px;">移动端支持</div>
+            </div>
+
+        </div>
+    </div>
+
+<!-- 导航栏-->
+    <div class="menu" style="background-color: #6f42c1;">
+        <div class="container" style="border:solid 0; padding: 0">
+            <nav class="navbar navbar-expand-lg navbar-dark sub_menu" style="background:#a515d3">
+                <a class="navbar-brand" href="http://127.0.0.1:5000/">快捷导航</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+                        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div class="navbar-nav">
+<!--                        <a class="nav-link "href="#">猪仔导航1</a>-->
+<!--                        <a class="nav-link" href="#">猪仔导航2</a>-->
+<!--                        <a class="nav-link" href="#">猪仔导航3</a>-->
+<!--                        <a class="nav-link" href="#">猪仔导航4</a>-->
+<!--                        <a class="nav-link" href="#">猪仔导航5</a>-->
+<!--                        <a class="nav-link" href="#">猪仔导航6</a>-->
+                        {% for k ,v in article_type.items()%}
+                        <a class="nav-link nav-item "href="/type/{{k}}-1">{{v}}</a>
+                        {% endfor %}
+                    </div>
+                     <div class="navbar-nav ml-auto">
+                         {% if session.get('islogin')== 'true'%}
+                          <a class="nav-link"href="#" style="color:azure;padding-top:15px" >
+                            欢迎你:{{session.get('nickname')}}
+                        </a>
+                         <a class="nav-link">
+                            <button  onclick="window.location.href='/logout'" type="button" class="btn btn-info" >注销</button>
+                        </a>
+
+                        <a class="nav-link" href="#">
+                            <button type="button" class="btn btn-danger" data-toggle="modal">用户中心</button>
+                        </a>
+
+                         {%else%}
+
+                        <a class="nav-link "href="#">
+                            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#staticBackdrop">登录</button>
+                        </a>
+
+                        <a class="nav-link" href="#">
+                            <button type="button" class="btn btn-info" onclick="showlogon()">注册</button>
+                        </a>
+                         {% endif %}
+                </div>
+            </nav>
+        </div>
+    </div>
+
+
+
+    <div class="container" style="padding: 0">
+        <div class="row" >
+
+
+<!--页面中部-->
+                {% block connect %}
+                {% endblock %}
+<!--页面中部-->
+
+        </div>
+    </div>
+    <br>
+
+    <div class="container-fluid" style="border:solid 2px red;height:50px" >copyright</div>
+<!-- 开始加载登陆页面-->
+
+<div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <!--二层模块-->
+                    <div>
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#admin" role="tab"
+                                   aria-controls="home"
+                                   aria-selected="true">
+                                    <h6>登陆</h6>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#edit" role="tab"
+                                   aria-controls="profile"
+                                   aria-selected="false">
+                                    <h6>注册</h6>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                                   aria-controls="contact"
+                                   aria-selected="false">
+                                    <h6>找回密码</h6>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content border border-top-0" id="myTabContent">
+                            <!--3层模块1-->
+                            <div class="tab-pane fade show active" id="admin" role="tabpanel"
+                                 aria-labelledby="home-tab">
+                                <div class="modal-body row place" >
+                                    <div class="col-4">
+                                        <label style="text-align:right">登录邮箱：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" id="loginname"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>登录密码：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="password"  id="loginpass"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>图片验证码：</label>
+                                    </div>
+                                    <div class="col-5">
+                                        <input class="form-control" type="text" id="logincode" onkeyup="dologin(event)"/>
+                                    </div>
+                                  <img src="/vcode" id =loginvcode class="col-3" onclick="this.src='/vcode?'+Math.random()">   <!-- 特别注意.通过添加随机参数,欺骗浏览器刷新-->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-success" onclick="dologin(null)">登陆</button>
+                                </div>
+                            </div>
+
+                             <!--3层模块2-->
+
+                            <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="profile-tab">
+                                 <div class="modal-body row place">
+                                    <div class="col-4">
+                                        <label style="text-align:right">注册邮箱：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" id="regname"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>注册密码：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" id="regpass"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>邮箱验证码：</label>
+                                    </div>
+                                    <div class="col-5">
+                                        <input class="form-control" type="text" id="regcode" onkeyup="dologon(event)"/>
+                                    </div>
+                                     <div class="col-3">
+                                         <button type="button"  class="btn btn-warning" onclick="doSendMail(this)">获取</button>
+                                     </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-primary" onclick="dologon(null)">注册</button>
+                                </div>
+                            </div>
+
+                            <!--3层模块3-->
+
+                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                                 <div class="modal-body row place" >
+
+                                    <div class="col-4">
+                                        <label style="text-align:right">注册邮箱：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" id="findname"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>新密码：</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" id="findpass"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <label>图片验证码：</label>
+                                    </div>
+                                    <div class="col-5">
+                                        <input class="form-control" type="text" id="findcode" onkeyup="findpassword(event)"/>
+                                    </div>
+                                     <div class="col-3">
+                                         <button type="button" class="btn btn-success" onclick="dofindpassword_SendMail(this)">获取</button>
+                                     </div>
+                                 </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-danger" onclick="findpassword(null)">找回密码</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!--二层模块-->
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

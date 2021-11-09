@@ -1,0 +1,105 @@
+<div class="col-sm-3 col-12" style="border: none;padding-right:0">
+
+                <div class="col-12  search-bar" style="margin: 10px 0 ">
+                    <div  class="row"   style="padding: 0 10px">
+                        <div class="col-sm-8 col-12">
+                            <input type="text" class="form-control float-left" id="keyword" placeholder="请输入关键字" onkeyup="Do_Search(event)"/>
+                        </div>
+                        <div class="col-sm-4 col-12">
+                            <button type="button" class="btn btn-secondary float-right" onclick="Do_Search(null)">搜索</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-12 side" style="">
+                    <div class="col-12 tip ">推荐</div>
+                    <div class="col-12 ul">
+                        <ul id="last">
+
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="col-12 side" style="">
+                    <div class="col-12 tip ">最多浏览</div>
+                    <div class="col-12 ul">
+                        <ul id="most" >
+
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="col-12 side" style="">
+                    <div class="col-12 tip ">预留</div>
+                    <div class="col-12 ul">
+                        <ul id="recommended">
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+<script type="text/javascript">
+    function Do_Search(e){
+        if (e != null && e.keyCode != 13){
+            return  false
+        }
+        var keyword  = $.trim($("#keyword").val());
+        if (keyword.length == 0 || keyword.length >10 || keyword.indexOf('%')>=0){
+            window.alert('关键字不合法');
+            $('#keyword').focus();
+            return false
+        }
+        location.href = '/search/1-' + keyword
+    }
+    // 自定义substring()函数，利用js函数来截取字符串
+    function truncate(s, length ){
+        var count = 0;
+        var str = '';
+        for (var i in s){
+            str += s[i];
+            var code = s.charCodeAt(parseInt(i));
+            if (code <= 128){
+                count += 1
+            }
+            else {
+                count += 2
+            }
+            if (count > length) {
+                break
+            }
+        }
+        return str
+    }
+
+
+    //在jQuery中 表示文档加载完成后开始执行（不需要按钮或事件触发），等同于 js ==》windows.load = function(){}
+    $(document).ready(function () {
+        //第一步，发送Ajax请求去访问 recommend接口，获取JSON
+        $.get('/recommend',function(date){
+         //获取响应并动态填充到对应的推荐栏中
+         var lastdate = date[0]
+         var mostdate = date[1]
+         var recommend = date[2]
+
+         for (var i in lastdate){
+             var articleid = lastdate[i][0]
+             var headline = lastdate[i][1]
+             var id = parseInt(i) + 1
+             $("#last").append('<li><a href="/article/'+articleid+'">'+id+'.'+truncate(headline,20)+'</a></li>')
+         }
+         for (var i in mostdate){
+             var articleid = lastdate[i][0]
+             var headline = lastdate[i][1]
+             var id = parseInt(i) + 1
+             $("#most").append('<li><a href="/article/'+articleid+'">'+id+'.'+headline.substring(0,19)+'</a></li>')
+         }
+         for (var i in recommend){
+             var articleid = lastdate[i][0]
+             var headline = lastdate[i][1]
+             var id = parseInt(i) + 1
+             $("#recommended").append('<li><a href="/article/'+articleid+'">'+id+'.'+headline.substring(0,19)+'</a></li>')
+         }
+        })
+    })
+</script>

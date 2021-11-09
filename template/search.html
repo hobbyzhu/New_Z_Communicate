@@ -1,0 +1,97 @@
+{% extends 'base.html' %}  {# 将当前页面继承到base页面 这样以子页面为中心  特别小心#}
+{% block connect %}
+<div class="col-sm-9 col-12" style="border: none">
+    <div class="col-12" style="padding: 10px 0">
+        <!-- 轮播图  -->
+        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="/img/banner-4.jpg" class="d-block w-100" alt="...">
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/banner-2.jpg" class="d-block w-100" alt="...">
+                </div>
+                <div class="carousel-item" style="border: none">
+                    <img src="/img/banner-3.jpg" class="d-block w-100" alt="...">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-target="#carouselExampleIndicators"
+                    data-slide="prev" style="opacity: 0">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-target="#carouselExampleIndicators"
+                    data-slide="next" style="opacity: 0">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only"></span>
+            </button>
+        </div>
+        <!-- 轮播图  -->
+    </div>
+
+    {% for article ,nickname in result %}
+    <div class="col-12 row article-list">
+        <!-- 文章  -->
+        <div class="col-sm-3 col-3 thumb d-none d-sm-block " style="padding: 10px 0">
+            <img src="/img/{{article.thumbnail}}" class="img-fluid"/>
+        </div>
+        <div class="col-sm-9 col-xs-12 detail">
+            <div class="title"><a href="/article/{{article.articleid}}">{{article.headline}}</a></div>
+            <div class="info">作者：{{nickname}}&nbsp;&nbsp;&nbsp;类别：{{article_type[article.category | string]}}&nbsp;&nbsp;&nbsp;
+                日期：{{article.createtime}}&nbsp;&nbsp;&nbsp;阅读：{{article.readcount}}次&nbsp;&nbsp;&nbsp;消耗积分：{{article.credit}}
+                分
+            </div>
+            <div class="intro">
+                {{article.content | striptags | truncate(80)}}
+            </div>
+        </div>
+    </div>
+    <!-- 文章  -->   {% endfor%}
+    <!-- 分页栏 -->
+    <div class="col-12 row paginate center">
+    <nav aria-label="Page navigation example" style="text-align: center">
+        <ul class="pagination ">
+            <li class="page-item">
+                {% if page == 1 %}
+                <a class="page-link" href="/search/1-{{keyword}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+                {%else%}
+                <a class="page-link" href="/search/{{page-1}}-{{keyword}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+                {% endif %}
+
+            </li>
+            {% for i in range( total | int ) %}
+            <li class="page-item"><a class="page-link" href="/search/{{i+1}}-{{keyword}}">{{i+1}}</a></li>
+            {% endfor %}
+
+            <li class="page-item">
+                {% if page == total %}
+                <a class="page-link" href="/search/{{page}}-{{keyword}}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                {% else %}
+                 <a class="page-link" href="/search/{{page+1}}-{{keyword}}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
+</div>
+
+
+
+{# 按需要导入右边栏#}
+{% include 'list.html'%}
+{% endblock %}

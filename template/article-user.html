@@ -1,0 +1,318 @@
+{% extends 'base.html' %}  {# 将当前页面继承到base页面 这样以子页面为中心  特别小心#}
+{% block connect %}
+<div class="container" style="padding: 0">
+    <div class="row">
+        <div class="col-sm-9 col-12" style="#6f42c1;padding:0;border: solid 1px #ffffff">
+
+            <div class="col-12" style="padding:0;border-bottom: solid 1px #ffffff;border-radius:0">
+                <!--正文标题start-->
+                <div class="col-12 row article-detail">
+                    <div class="col-9">
+                        <!--正文标题close-->
+                        <div class="col-12 title" style="border:0px">
+                            {{article.headline}}
+                        </div>
+                    </div>
+                    <div class="col-3 favourite" style="text-align: right">
+
+
+                        {% if is_favourite == True %}
+
+                        <label style="text-align: left" class="sub-addfavorite"
+                               onclick="cancelFavorite('{{article.articleid}}')">
+                            <span class="oi oi-heart" aria-hidden="true"></span>
+                            取消收藏
+                        </label>
+
+                        {% else%}
+
+                        <label style="text-align: left" class="addfavorite"
+                               onclick="addFavorite('{{article.articleid}}')">
+                            <span class="oi oi-heart" aria-hidden="true"></span>
+                            文章收藏
+                        </label>
+
+                        {% endif%}
+
+                    </div>
+                </div>
+                <div class="col-12 article-detail">
+                    作者：{{article.nickname}} 类别：{{article_type[article.category | string ]}} 日期：{{article.createtime}}
+                    阅读：{{article.readcount}} 次 消耗积分：{{article.credit}} 分
+                </div>
+                <div class="col-12 info"></div>
+            </div>
+
+            <!-- 正文部分-->
+            <div class="passage" id="content">
+                {{article.content | safe }}
+            </div>
+
+            <!--判断部分，根据积分要求 消耗积分就出现对话框-->
+            {% if article.credit > 0 and payed == False %}
+            <div class="col-12 readall">
+                {% if session.get('islogin') == 'true' %}
+                <button type="button" class="btn btn-outline-info btn-block" onclick="readAll()">
+                    阅读全文消耗积分：{{article.credit}}
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-outline-info btn-block" data-toggle="modal"
+                        data-target="#staticBackdrop">
+                    你还没有登录，点击登录后可阅读全文
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            <!--正文结束-->
+
+
+            <br>
+            <div class="clo-12 article-new">
+                <div>版权所有，转载本站文章请注明出处：</div>
+
+                <div><a href="/article/{{perv_next.prev_id}}">上一篇：{{perv_next.prev_headline}}</a></div>
+                <div><a href="/article/{{perv_next.next_id}}">下一篇：{{perv_next.next_headline}}</a></div>
+            </div>
+
+            <br>
+            <!-- 文章评论-->
+            <div class="container article-comment">
+                <div class="row">
+                    {% if session.get('islogin') == 'true' %}
+                    <div class="col-2" style="text-align: right">
+                        <label for="nickname" id="show_nickname">昵 称 ：</label>
+                        <label for="nickname" style="display: none" id="show_sub_nickname">回 复 对 象 ：</label>
+                    </div>
+                    <div class="col-10">
+                        <input type="text" id="nickname" class="form-control" value="{{session.get('nickname')}}"
+                               readonly/>
+                    </div>
+                    {% else %}
+
+                    <div class="col-2" style="text-align: right">
+                        <label for="nickname">昵 称 ：</label>
+                    </div>
+
+                    <div class="col-10">
+                        <input type="text" id="nickname" class="form-control" readonly value="你还没有登录请点击登录"
+                               data-toggle="modal" data-target="#staticBackdrop"/>
+                    </div>
+                    {% endif %}
+
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-2" style="text-align: right">
+                        <label for="control">评 论 内 容：</label>
+                    </div>
+                    <div class="col-10">
+                        <textarea class="form-control" style="height: 100px" id="control"></textarea>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-2"></div>
+                    <div class="col-10 row">
+                        <div class="col-9">提示：登录后添加有效评论可享受积分哦！</div>
+                        <div class="clo-3">
+                            {% if session.get('islogin') == 'true' %}
+
+                            <button type="button" class="btn btn-success" onclick="addComment('{{article.articleid}}')" id="submitBtn">
+                                评论发布
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="replyCommnt('{{article.articleid}}')" style="display: none" id="reply">
+                                回复评论
+                            </button>
+
+                            {% else %}
+                            <button type="button" class="btn btn-success" data-toggle="modal"
+                                    data-target="#staticBackdrop">登录
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- 循环遍历评论，这部分代码保持不变 -->
+            {% for comment, user in comment_user %}
+            <div id="commentDiv">
+                <div class="col-12 list row article-comment" >
+                    <div class="col-2 icon">
+                        <img src="/avatar/{{user.avatar}}" class="img-fluid" style="width: 70px;">
+                    </div>
+                    <div class="col-10 comment">
+                        <div class="col-12 row" style="padding: 0px">
+                            <div class="col-7 commenter">{{user.nickname}}&nbsp;&nbsp;&nbsp;{{comment.createtime}}</div>
+                            <div class="col-5 reply">
+
+
+                                <!-- 文章作者、管理员和评论者只能回复和隐藏，不能点赞-->
+                                {% if article.userid == session.get('userid')   or
+                                    session.get('role') == 'admin' or
+                                    comment.userid == session.get('userid') %}
+
+                                <!--注意 这个无法通过外部条件获取。回复的评论 ，只能通过函数传递参数-->
+                                <label onclick="gotoReply('{{comment.commentid}}')">
+                                    <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
+                                </label>&nbsp;&nbsp;&nbsp;
+                                <label onclick="hideComment(this, '{{comment.commentid}}')">
+                                    <span class="oi oi-x" aria-hidden="true"></span> 隐藏 <span></span>
+                                </label>&nbsp;&nbsp;&nbsp;
+                                {% else %}
+                                 <label onclick="gotoReply('5')">
+                                    <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
+                                </label>&nbsp;&nbsp;&nbsp;
+                                <label onclick="agreeComment(this, '5')">
+                                    <span class="oi oi-chevron-bottom" aria-hidden="true"></span> 赞成 (<span>{{comment['agreecount']}}</span>)
+                                </label>&nbsp;&nbsp;&nbsp;
+                                <label onclick="opposeComment(this, '5')">
+                                    <span class="oi oi-x" aria-hidden="true"></span> 反对 (<span>{{comment['opposecount']}}</span>)
+                                </label>
+                                {% endif %}
+
+
+
+                            </div>
+                        </div>
+                        <div class="col-12 content">
+                            {{comment.content}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <!-- 循环遍历评论，这部分代码保持不变 -->
+
+
+        </div>
+
+
+        {# 按需要导入右边栏#}
+        {% include 'list.html'%}
+
+
+<script>
+    // 剩余页面加载
+    function readAll() {
+        var param = 'articleid={{article.articleid}}&position={{position}}';  //数据由前端页面提供，直接使用
+        $.post('/readall', param, function (date) {
+            $('#content').append(date);  //将数据加载到content后面
+            $('.readall').hide()   //根据class 定位元素并隐藏
+        })
+    }
+
+    // 收藏按钮
+    function addFavorite(articleid) {
+        $.post('/favorite', 'articleid=' + articleid, function (data) {
+            if (data == 'no-login') {
+                window.alert('未登录用户')
+            } else if (data == 'favorite-pass') {
+                // 菜单名称改为：收藏成功
+                $('.addfavorite').html('<span class="oi oi-heart" aria-hidden="true" ></span>收藏成功')
+                // 锁定菜单让用户无法再次收藏
+                $('.addfavorite').attr('onclick', '').unbind('click')
+            } else {
+                window.alert('收藏失败，系统异常')
+            }
+        })
+    }
+
+    //jQuery 没有封装Delete请求，原生ajax请求处理dalete请求，没有数据部分只有处理部分
+    function cancelFavorite(articleid) {
+        //原生的请求
+        $.ajax({
+            url: '/favorite/' + articleid,
+            type: 'delete',
+            success: function (data) {
+                if (data == 'cancel-pass') {
+                    window.alert('取消成功')
+                    // 菜单名称改为：收藏文章
+                    $('.sub-addfavorite').html('<span class="oi oi-heart" aria-hidden="true" ></span>收藏文章')
+                    // 锁定菜单让用户无法再次取消收藏
+                    $('.sub-addfavorite').attr('onclick', '').unbind('click')
+                } else if (data == 'cancel') {
+                    window.alert('收藏系统异常')
+                }
+            }
+        })
+    }
+
+    // 文章评论
+    function addComment(articleid) {
+        var content = $.trim($('#control').val());
+        if (content.length < 5 || content.length > 1000) {
+            window.alert('评论内容不符合要求')
+            return false
+        }
+        var param = 'articleid=' + articleid + '&content=' + content;
+        $.post('/comment', param, function (date) {
+            if (date == 'content-invalid') {
+                window.alert('内容不合法')
+            } else if (date == 'add-pass') {
+                location.reload()
+            } else if (date == 'add-fail') {
+                window.alert('评论失败')
+            } else if (date == 'replay-pass') {
+                window.alert('今天评论已经超过10条，无法继续获取积分，但不会限制你的评论，请继续吹')
+                location.reload()
+            } else if (date == 'replay-fail') {
+                window.alert(' 评论失败系统异常请联系管理员')
+            }
+            else if (date=='你还没有登录')   //这是蓝图拦截器定义的接口，后端限制未登录用户无法回复。其实无法触发
+                window.alert('你还没有登录，无法回复')
+        })
+    }
+
+    //将回复按钮和回复文本框关联，怎么进行数据传递2种方法
+    //1.全局变量
+    //2.使用临时DIV进行中转
+    var COMMENTID = 0 ;
+    function gotoReply(commentid){
+        // 隐藏标签
+        $('#reply').show();
+        $('#submitBtn').hide();
+        $('#show_nickname').hide();
+        $('#show_sub_nickname').show();
+        // 将参数显示出来，这里的用户体验不好，需要改进
+        $('#nickname').val('请在此回复'+commentid+'的评论');
+        $('#control').focus(); //文本获得焦点
+        COMMENTID = commentid;
+    }
+    //和上面的函数进行关联，接受传递的参数
+    function replyCommnt(articleid){
+       var content = $.trim($('#control').val());
+       if (content.length<5 || content.length>1000){
+           window.alert('评论内容不符合要求')
+           return false
+       }
+       var param = 'articleid='+articleid   //目前正常阅读的文章，由jinja2传递
+        param += '&commentid='+ COMMENTID
+        param += '&content=' + content
+
+        $.post('/reply',param,function(date){
+            if (date=='comtent-invalid'){
+                window.alert('评论内容不符合要求')
+            }
+            else if (date=='replay-pass'){
+                //评论成功就不提示了烦人,直接刷新
+                location.reload()
+            }
+            else if (date=='replay-fail'){
+                window.alert('评论异常请联系管理员')
+            }
+            else if (date=='replay-10-Limit'){
+                window.alert('评论成功，已经超出每天10条限制，无法获取积分，但评论正常显示')
+                location.reload()
+            }
+            else if (date=='replay-fail'){
+                window.alert('评论区异常请联系管理员')
+            }
+            else if (date=='你还没有登录')   //这是蓝图拦截器定义的接口，后端限制未登录用户无法回复
+                window.alert('你还没有登录，无法回复')
+        })
+    }
+
+
+</script>
+{% endblock %}

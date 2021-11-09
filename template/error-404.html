@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>error</title>
+</head>
+<body>
+            {% extends 'base.html' %}  {# 将当前页面继承到base页面 这样以子页面为中心  特别小心#}
+            {% block connect %}
+            <div class="col-9"style="margin: auto">
+            <img src='/img/404.png' class="img-fluid"/>
+            </div>
+            <script>
+                setTimeout(function (){
+                    location.href = '/';
+                },2000);
+            </script>
+            {% endblock %}
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>
+        <span>{{session.get('name')}}</span>
+        <span>你到名字{{xx.k1}}</span>
+        <span>你到名字{{xx.count}}</span>
+        <br>
+
+        {% if count%2 == 0 %}
+        <span>ture</span>
+        {% else %}
+        <span>false</span>
+        {% endif %}
+
+        <br>
+        <br>
+        {% set loop= count /10 %}   {#这是浮点数是float类型--》返回#}
+        {% set intloop = loop | int %}  {#使用过滤器强制转换为 int类型类型#}
+        {% for i in range(intloop) %}
+        <span>
+            print{{i}}
+            <br>
+        </span>
+        {% endfor %}
+        <span>
+        {{typ}}
+        </span>
+        <br>
+        <span>自定义函数通过jinja2 调用 方法一{{xxx.k2}}</span><br>
+        <span>自定义函数通过jinja2 调用方法一{{xxx["k2"]}}</span><br>
+
+        <span>自定义函数通过jinja2 调用方法二{{mytype3()}}</span><br>
+        <span>自定义函数通过jinja2 调用方法二{{mytype3["k2"]}}</span><br>
+
+        <span>自定义函数通过jinja2 调用方法一 增加闭包 增加参数{{xxx1(xx)}}</span><br>
+        <span>自定义函数通过jinja2 调用方法一 增加闭包 增加参数{{xxx1(xx)["k2"]}}</span><br>
+
+        <span>自定义模板引擎mylen1 并调用 文章长度：{{count1 | mylen1}}</span><br>
+
+
+    </div>
+
+</body>
+</html>
