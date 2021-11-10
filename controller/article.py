@@ -47,14 +47,15 @@ def red(articleid):
     perv_next = Article().find_prev_next_by_id(articleid)
 
     # 显示当前文章的评论
-
-    comment_user = Comment().find_limit_with_user(articleid=articleid, start=0, count=50)
+    # comment_user = Comment().find_limit_with_user(articleid=articleid, start=0, count=50) 已构造就是下面的一条
+    # 文章评论的回复 注意带分页参数
+    comment_list = Comment().get_comment_user_list(articleid, 0, 50)
 
     #  这是侧边栏第三加载方式 后端渲染 要放入所有端口中
     article = Article()
     last, most, recommended = article.find_last_readcount_recommended()
     return render_template('article-user.html', recommonded=recommended, article=d, position=position, payed=payed,
-                           is_favourite=is_favourite, perv_next=perv_next, comment_user=comment_user)
+                           is_favourite=is_favourite, perv_next=perv_next, comment_list=comment_list)
 
 
 # 通过post请求将剩余部分渲染出来

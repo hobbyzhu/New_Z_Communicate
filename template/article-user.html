@@ -133,25 +133,22 @@
                     </div>
                 </div>
             </div>
-
-    <!-- 循环遍历评论，这部分代码保持不变 -->
-            {% for comment, user in comment_user %}
+            <br>
+<!-- 循环遍历评论，这部分代码保持不变 -->
+{% for comment in comment_list %}
             <div id="commentDiv">
                 <div class="col-12 list row article-comment" >
                     <div class="col-2 icon">
-                        <img src="/avatar/{{user.avatar}}" class="img-fluid" style="width: 70px;">
+                        <img src="/avatar/{{comment.avatar}}" class="img-fluid" style="width: 70px;">
                     </div>
                     <div class="col-10 comment">
                         <div class="col-12 row" style="padding: 0px">
-                            <div class="col-7 commenter">{{user.nickname}}&nbsp;&nbsp;&nbsp;{{comment.createtime}}</div>
+                            <div class="col-7 commenter">{{comment.nickname}}&nbsp;&nbsp;&nbsp;{{comment.createtime}}</div>
                             <div class="col-5 reply">
-
-
                                 <!-- 文章作者、管理员和评论者只能回复和隐藏，不能点赞-->
                                 {% if article.userid == session.get('userid')   or
                                     session.get('role') == 'admin' or
                                     comment.userid == session.get('userid') %}
-
                                 <!--注意 这个无法通过外部条件获取。回复的评论 ，只能通过函数传递参数-->
                                 <label onclick="gotoReply('{{comment.commentid}}')">
                                     <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
@@ -160,7 +157,7 @@
                                     <span class="oi oi-x" aria-hidden="true"></span> 隐藏 <span></span>
                                 </label>&nbsp;&nbsp;&nbsp;
                                 {% else %}
-                                 <label onclick="gotoReply('5')">
+                                 <label onclick="gotoReply('{{comment.commentid}}')">
                                     <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
                                 </label>&nbsp;&nbsp;&nbsp;
                                 <label onclick="agreeComment(this, '5')">
@@ -170,9 +167,6 @@
                                     <span class="oi oi-x" aria-hidden="true"></span> 反对 (<span>{{comment['opposecount']}}</span>)
                                 </label>
                                 {% endif %}
-
-
-
                             </div>
                         </div>
                         <div class="col-12 content">
@@ -181,6 +175,53 @@
                     </div>
                 </div>
             </div>
+
+
+<!--如果此评论没有回复，则下面的评论就是空的不会显示-->
+                {% if comment['reply_list']%}
+                {% for reply in comment['reply_list']%}
+                <div class="col-12 list row article-comment" >
+                    <div class="col-2 icon">
+                        <img src="/avatar/{{reply.avatar}}" class="img-fluid" style="width: 60px;margin-left:50%;margin-top:10%">
+                    </div>
+                    <div class="col-10 comment"style="border: solid 1px #ccc;">
+                        <div class="col-12 row" style="padding-left: 15px">
+                            <div class="col-7 commenter" style="color: #337ab7">{{reply.nickname}}&nbsp;&nbsp回复:{{comment.nickname}};&nbsp;{{reply.createtime}}</div>
+                            <div class="col-5 reply">
+                                <!-- 文章作者、管理员和评论者只能回复和隐藏，不能点赞-->
+                                {% if article.userid == session.get('userid')   or
+                                    session.get('role') == 'admin' or
+                                    comment.userid == session.get('userid') %}
+                                <!--注意 回复的回复是无法回复的，此功能没有完全实现-->
+<!--                                <label onclick="gotoReply('{{reply.commentid}}')">-->
+<!--                                    <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复-->
+<!--                                </label>&nbsp;&nbsp;&nbsp;-->
+                                <label onclick="hideComment(this,'{{reply.commentid}}')">
+                                    <span class="oi oi-x" aria-hidden="true"></span> 隐藏 <span></span>
+                                </label>&nbsp;&nbsp;&nbsp;
+                                {% else %}
+                                <!--注意 回复的回复是无法回复的，此功能没有完全实现-->
+<!--                                 <label onclick="gotoReply('5')">-->
+<!--                                    <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复-->
+<!--                                </label>&nbsp;&nbsp;&nbsp;-->
+                                <label onclick="agreeComment(this, '5')">
+                                    <span class="oi oi-chevron-bottom" aria-hidden="true"></span> 赞成 (<span>{{reply['agreecount']}}</span>)
+                                </label>&nbsp;&nbsp;&nbsp;
+                                <label onclick="opposeComment(this, '5')">
+                                    <span class="oi oi-x" aria-hidden="true"></span> 反对 (<span>{{reply['opposecount']}}</span>)
+                                </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            {{reply.content}}
+                        </div>
+                    </div>
+                </div>
+                {% endfor%}
+                {% endif%}
+<!--这是每一个回复的评论控制区结束-->
+                <br>
             {% endfor %}
             <!-- 循环遍历评论，这部分代码保持不变 -->
 

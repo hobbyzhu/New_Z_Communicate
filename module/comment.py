@@ -59,7 +59,7 @@ class Comment(DBase):
     # 查询原始评论与对于的用户信息，带分页参数
     def find_comment_with_user(self, articleid, start, count):
         result = dbsession.query(Comment, Users).join(Users, Users.userid == Comment.userid). \
-            filter(Comment.articleoid == articleid, Comment.hide == 0, Comment.replyid == 0). \
+            filter(Comment.articleid == articleid, Comment.hide == 0, Comment.replyid == 0). \
             order_by(Comment.commentid.desc()).limit(count).offset(start).all()
 
         return result
@@ -73,13 +73,12 @@ class Comment(DBase):
     # 根据原始评论和回复评论生成一个关联列表    # 这是数据结构重写构造的方法，   ==》十分重要,本功能的核心点
     def get_comment_user_list(self, articleid, start, count):
         result = self.find_comment_with_user(articleid, start, count)
-
+        # result是2个对象的表，通过下面的方法转为json
         comment_list = model_join_list(result)  # 原始评论的连接结果
-
         for comment in comment_list:
-
-            result = self.find_comment_with_user(comment['commentid'])
-
+            # 查询原始评论对于的回复评论，并转换为列表保存到comment_list中
+            result = self.find_reply_with_user(comment['commentid'])
+            # 为comment_list 列表中的原始评论字典对象添加新key--》reply_list
+            # 用于储存当前这条评论的所有回复评论，如果没有回复评论则返回为空
             comment['reply_list'] = model_join_list(result)
-
         return comment_list
