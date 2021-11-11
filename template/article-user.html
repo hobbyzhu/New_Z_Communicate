@@ -134,6 +134,12 @@
                 </div>
             </div>
             <br>
+
+
+
+
+<!--这是评论大包围开始的地方-->
+            <div id="commentDIV">
 <!-- 循环遍历评论，这部分代码保持不变 -->
 {% for comment in comment_list %}
             <div id="commentDiv">
@@ -153,17 +159,17 @@
                                 <label onclick="gotoReply('{{comment.commentid}}')">
                                     <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
                                 </label>&nbsp;&nbsp;&nbsp;
-                                <label onclick="hideComment(this, '{{comment.commentid}}')">
+                                <label onclick="hideComment(this,'{{comment.commentid}}')">
                                     <span class="oi oi-x" aria-hidden="true"></span> 隐藏 <span></span>
                                 </label>&nbsp;&nbsp;&nbsp;
                                 {% else %}
                                  <label onclick="gotoReply('{{comment.commentid}}')">
                                     <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复
                                 </label>&nbsp;&nbsp;&nbsp;
-                                <label onclick="agreeComment(this, '5')">
-                                    <span class="oi oi-chevron-bottom" aria-hidden="true"></span> 赞成 (<span>{{comment['agreecount']}}</span>)
+                                <label onclick="agreeComment(this,'{{comment.commentid}}')">
+                                    <span class="oi oi-chevron-bottom" aria-hidden="true"></span>赞成(<span>{{comment['agreecount']}}</span>)
                                 </label>&nbsp;&nbsp;&nbsp;
-                                <label onclick="opposeComment(this, '5')">
+                                <label onclick="opposeComment(this,'{{comment.commentid}}')">
                                     <span class="oi oi-x" aria-hidden="true"></span> 反对 (<span>{{comment['opposecount']}}</span>)
                                 </label>
                                 {% endif %}
@@ -204,10 +210,10 @@
 <!--                                 <label onclick="gotoReply('5')">-->
 <!--                                    <span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复-->
 <!--                                </label>&nbsp;&nbsp;&nbsp;-->
-                                <label onclick="agreeComment(this, '5')">
-                                    <span class="oi oi-chevron-bottom" aria-hidden="true"></span> 赞成 (<span>{{reply['agreecount']}}</span>)
+                                <label onclick="agreeComment(this,'{{reply.commentid}}')">
+                                    <span class="oi oi-chevron-bottom" aria-hidden="true" ></span> 赞成 (<span>{{reply['agreecount']}}</span>)
                                 </label>&nbsp;&nbsp;&nbsp;
-                                <label onclick="opposeComment(this, '5')">
+                                <label onclick="opposeComment(this,'{{reply.commentid}}')">
                                     <span class="oi oi-x" aria-hidden="true"></span> 反对 (<span>{{reply['opposecount']}}</span>)
                                 </label>
                                 {% endif %}
@@ -224,6 +230,26 @@
                 <br>
             {% endfor %}
             <!-- 循环遍历评论，这部分代码保持不变 -->
+
+            </div>
+<!--                这是回复评论大包围结束的地方 id = commentDIV-->
+
+
+
+<!--            开始前端页面分页   原始评论大于10条才开始分页-->
+            {% if total > 1%}
+            <div style="padding-left: 50%">
+                <label onclick="gotopage('{{article.articleid}}','prev')">上一页</label>&nbsp;
+                {% for i in range(total)%}
+                <label onclick="gotopage('{{article.articleid}}','{{i+1}}')">{{i+1}}</label>&nbsp;
+                {% endfor %}
+                <label onclick="gotopage('{{article.articleid}}','next')">上一页</label>
+            </div>
+            {% endif %}
+            <br>
+
+<!--            结束前端页面分页   原始评论大于10条才开始分页-->
+
 
 
         </div>
@@ -353,7 +379,115 @@
                 window.alert('你还没有登录，无法回复')
         })
     }
+    // 评论点赞
+    function agreeComment(obj,commentid){
+        var param = 'commentid='+ commentid + '&category=1'
+        $.post('/opinion',param,function (data){
+            if (data=='opinion-pass'){
+                var element =$(obj).children('span').eq(1)   //返回的是对象
+                var count = parseInt(element.text())  //获取对象的值，转为int
+                element.text(count+1)
+            }
+            else if (data =='system-opinion-fail'){
+                window.alert('系统故障请联系管理员')
+            }
+        })
+    }
 
+    // 评论反对
+    function opposeComment(obj, commentid){
+        var param = 'commentid='+ commentid + '&category=0'
+        $.post('/opinion',param,function (data){
+            if (data=='opinion-pass'){
+                var element =$(obj).children('span').eq(1)   //返回的是对象
+                var count = parseInt(element.text())  //获取对象的值，转为int
+                element.text(count+1)
+            }
+            else if (data =='system-opinion-fail'){
+                window.alert('系统故障请联系管理员')
+            }
+        })
+    }
+
+
+
+
+
+
+
+    // 定义前端页面分页功能
+    var PAGE = 1 ; //定义全局变量用于记录前面在那一页，默认在第一页
+    var TOTAL = {{total}} ;  //总页数，由模板引擎填充
+    //添加gotopage函数代码
+    function gotopage(articleid,type){
+        //如果是第一页，则上一页还是第一页
+        if (type=='prev'){
+            if (PAGE>1)
+                PAGE -= 1
+        }
+         //如果是当前页是最后一页，则下一页还是最后一页
+        else if (type=='next'){
+            if(PAGE < TOTAL)
+                PAGE += 1
+        }
+        else {
+            PAGE = parseInt(type)
+        }
+        fillComment(articleid,PAGE)
+    }
+    function fillComment(articleid, pageid){
+        $('#commentDIV').empty(); //清空现有评论
+        var content = '';  //拼接评论区的html和jinja2的数据并且转换为js代码不熟悉建议多备
+        $.get('/comment/' + articleid + '-' + pageid ,function (data){
+            var comment = data
+
+            for (var i in comment){
+                content += '<div id="commentDiv">';
+                content += '<div class="col-12 list row article-comment" >';
+                content += '<div class="col-2 icon">';
+                content += '<img src="/avatar/' + comment[i]['avatar'] + '" class="img-fluid" style="width: 70px;">';
+                content += '</div>';
+                content += '<div class="col-10 comment">';
+                content += '<div class="col-12 row" style="padding: 0px">';
+                content += '<div class="col-7 commenter">'+ comment[i]['nickname'] +'&nbsp;&nbsp;&nbsp;'+comment[i]['createtime']+'</div>';
+                content += '<div class="col-5 reply">';
+                 <!-- 文章作者、管理员和评论者只能回复和隐藏，不能点赞-->
+                // 注意此处判断要改为支持js代码的方式，不是jinja2
+                if ('{{article.userid}}'=="{{session.get('userid')}}" ||
+                    "{{session.get('role')}}" == 'admin' ||
+                    comment[i]['userid'] == "{{session.get('userid')}}"){
+                    content += '<label onclick="gotoReply(' + comment[i]['commentid'] + ')">'
+                    content += '<span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复'
+                    content += '</label>&nbsp;&nbsp;&nbsp;'
+                    content += '<label onclick="hideComment(this,' + comment[i]['commentid'] + ')">'
+                    content += '<span class="oi oi-x" aria-hidden="true"></span> 隐藏 <span></span>'
+                    content += '</label>&nbsp;&nbsp;&nbsp;'
+                }
+                else {
+                    content += '<label onclick="gotoReply(' + comment[i]['commentid'] + ')">'
+                    content += '<span class="oi oi-arrow-circle-right" aria-hidden="true"></span>回复'
+                    content += '</label>&nbsp;&nbsp;&nbsp;'
+                    content += '<label onclick="agreeComment(this, \'5\')">'
+                    content += ''
+
+
+
+                }
+                content += ''
+
+
+
+
+
+
+
+            }
+
+
+        })
+
+
+    }
 
 </script>
 {% endblock %}

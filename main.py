@@ -95,4 +95,8 @@ if __name__ == '__main__':
 
     from controller.comment import *
     app.register_blueprint(comment)
+
+    from controller.opinion import *
+    app.register_blueprint(opinion)
+
     app.run(debug=True)

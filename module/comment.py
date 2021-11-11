@@ -61,13 +61,14 @@ class Comment(DBase):
         result = dbsession.query(Comment, Users).join(Users, Users.userid == Comment.userid). \
             filter(Comment.articleid == articleid, Comment.hide == 0, Comment.replyid == 0). \
             order_by(Comment.commentid.desc()).limit(count).offset(start).all()
-
+        dbsession.close()
         return result
 
     # 查询回复的评论，回复评论不要分页,注意这里通过传入参数确定查询范围
     def find_reply_with_user(self, replyid):
         result = dbsession.query(Comment, Users).join(Users, Users.userid == Comment.userid). \
             filter(Comment.hide == 0, Comment.replyid == replyid).all()
+        dbsession.close()
         return result
 
     # 根据原始评论和回复评论生成一个关联列表    # 这是数据结构重写构造的方法，   ==》十分重要,本功能的核心点
@@ -82,3 +83,25 @@ class Comment(DBase):
             # 用于储存当前这条评论的所有回复评论，如果没有回复评论则返回为空
             comment['reply_list'] = model_join_list(result)
         return comment_list
+
+     # 计算一篇文章的原始评论的分页页数
+    def gen_count_by_article(self, articleid):
+        count = dbsession.query(Comment).filter_by(articleid=articleid, hide=0, replyid=0).count()
+        dbsession.close()
+        return count
+
+    # 为评论点赞+和踩+1
+    def Publish(self, commentid):
+        result = dbsession.query(Comment).filter_by(commentid=commentid).first()
+        result.agreecount += 1
+        dbsession.commit()
+        dbsession.close()
+
+    # 踩+1
+    def Opposition(self, commentid):
+        result = dbsession.query(Comment).filter_by(commentid=commentid).first()
+        result.opposecount += 1
+        dbsession.commit()
+        dbsession.close()
+
+    # 为评论设置隐藏

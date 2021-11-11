@@ -1,3 +1,5 @@
+import math
+
 from flask import Blueprint, abort, render_template, request
 
 from module.article import Article
@@ -48,14 +50,18 @@ def red(articleid):
 
     # 显示当前文章的评论
     # comment_user = Comment().find_limit_with_user(articleid=articleid, start=0, count=50) 已构造就是下面的一条
-    # 文章评论的回复 注意带分页参数
-    comment_list = Comment().get_comment_user_list(articleid, 0, 50)
+    # 文章评论的回复 注意带分页参数 默认只显示10条原始评论，剩余评论通过前端页面加载
+    comment_list = Comment().get_comment_user_list(articleid, 0, 10)
+
+    # 获取每一篇文章的评论总数，为评论做分页，前端分页
+    count = Comment().gen_count_by_article(articleid)
+    total = math.ceil(count/10)
 
     #  这是侧边栏第三加载方式 后端渲染 要放入所有端口中
     article = Article()
     last, most, recommended = article.find_last_readcount_recommended()
     return render_template('article-user.html', recommonded=recommended, article=d, position=position, payed=payed,
-                           is_favourite=is_favourite, perv_next=perv_next, comment_list=comment_list)
+                           is_favourite=is_favourite, perv_next=perv_next, comment_list=comment_list, total=total)
 
 
 # 通过post请求将剩余部分渲染出来

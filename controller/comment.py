@@ -1,4 +1,4 @@
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, jsonify
 
 from module.article import Article
 from module.comment import Comment
@@ -81,3 +81,13 @@ def reply():
             return 'replay-10-Limit'
         except:
             return 'reply-Limit'
+
+
+
+# 测试接口，为了测试Ajax分页
+# 由于分页已经完成渲染，此接口仅根据前端的页码请求后台数据
+@comment.route('/comment/<int:articleid>-<int:page>')
+def comment_page(articleid, page):
+    start = (page - 1)*10
+    listx =Comment().get_comment_user_list(articleid, start, 10)  # 所有分页数据的获取
+    return jsonify(listx)
