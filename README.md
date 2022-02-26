@@ -1,6 +1,6 @@
 # 这是一个游戏网站的分享论坛
 为这个游戏创建论坛是为了分享游戏中的乐趣
-这个网站的框架是python+falsk+jinj2模板引擎+ sqlalchemy和jQuery
+这个网站的框架是python+flask+jinj2模板引擎+ sqlalchemy和jQuery
 网站的部分功能需要进一步优化
 后期网站完成我会统一推送
 再次感谢在网络上为我提供解答的各位，
